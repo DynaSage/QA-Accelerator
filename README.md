@@ -44,7 +44,7 @@ Confirm connections on **Settings** (Azure OpenAI, Azure DevOps, Azure Databrick
 
 ---
 
-## Daily use — sidebar workflow
+## Daily use - sidebar workflow
 
 Use the left menu in this order for a full run:
 
@@ -73,7 +73,7 @@ The app picks a mode automatically (you can override on **Build Spec**):
 
 A functional draft stores an empty ETL spec on purpose. You can still generate a QA pack; SQL table tests are skipped until a mapping (or KPI document) is attached.
 
-### Option A — Azure DevOps (typical)
+### Option A - Azure DevOps (typical)
 
 1. **Import** → **Azure DevOps** tab.
 2. Leave org/project empty to use `.env`, or override for one run.
@@ -85,17 +85,17 @@ A functional draft stores an empty ETL spec on purpose. You can still generate a
 8. **Generate**: Approve & Generate QA Pack. Keep Databricks execution **off** unless target tables exist.
 9. **Exports**: download the report and Excel. Close `output/qa_test_cases.xlsx` in Excel before regenerating.
 
-### Option B — Files only
+### Option B - Files only
 
 1. **Import** → **File Upload**: requirement document, mapping Excel (ETL), optional screenshots.
 2. **Save Uploads & Go to Build**, or open **Build Spec** → **Uploaded files**.
 3. Review → Generate → Exports (same as above).
 
-### Option C — Manual story
+### Option C - Manual story
 
 **Import** → **Manual Entry**: title, description, acceptance criteria. Builds a functional draft.
 
-### Option D — Sample demo
+### Option D - Sample demo
 
 ```powershell
 .\run_sample.ps1
@@ -321,7 +321,7 @@ Safety: **SELECT** / **WITH … SELECT** only. Blocked: INSERT, UPDATE, DELETE, 
 
 | Issue | Fix |
 |---|---|
-| `source_table` / `target_table` / `primary_key` missing | Functional draft with empty spec — generate without ETL SQL, or add a mapping and rebuild as ETL/hybrid |
+| `source_table` / `target_table` / `primary_key` missing | Functional draft with empty spec - generate without ETL SQL, or add a mapping and rebuild as ETL/hybrid |
 | Azure OpenAI error | Check endpoint, key, and `AZURE_OPENAI_DEPLOYMENT` |
 | ADO connection failed | Org, project, PAT (Work Items Read) |
 | ADO import returns 0 stories | Work item IDs, area path, iteration, work item type |
