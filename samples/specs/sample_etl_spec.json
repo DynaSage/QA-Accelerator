@@ -1,0 +1,50 @@
+{
+  "database_dialect": "Databricks SQL",
+  "catalog": "main",
+  "source_table": "main.stg.customer_raw",
+  "target_table": "main.dw.dim_customer",
+  "primary_key": "customer_id",
+  "load_type": "incremental",
+  "incremental_column": "updated_at",
+  "watermark_column": "load_ts",
+  "source_to_target_mapping": [
+    {
+      "source_column": "cust_id",
+      "target_column": "customer_id",
+      "transformation": "CAST(cust_id AS BIGINT)"
+    },
+    {
+      "source_column": "cust_name",
+      "target_column": "customer_name",
+      "transformation": "TRIM(UPPER(cust_name))"
+    },
+    {
+      "source_column": "email",
+      "target_column": "email_address",
+      "transformation": "LOWER(TRIM(email))"
+    },
+    {
+      "source_column": "status_cd",
+      "target_column": "is_active",
+      "transformation": "CASE WHEN status_cd = 'A' THEN 1 ELSE 0 END"
+    },
+    {
+      "source_column": "created_dt",
+      "target_column": "effective_from",
+      "transformation": "CAST(created_dt AS DATE)"
+    }
+  ],
+  "transformation_rules": [
+    "customer_name must be upper-cased and trimmed",
+    "email_address must be lower-cased",
+    "is_active is 1 when source status_cd = 'A', else 0",
+    "Soft-deleted source rows (status_cd = 'D') must not land in target"
+  ],
+  "business_rules": [
+    "email_address must contain '@'",
+    "customer_id must never be NULL",
+    "is_active must be 0 or 1 only"
+  ],
+  "not_null_columns": ["customer_id", "customer_name", "effective_from"],
+  "additional_notes": "All tables live in Azure Databricks Unity Catalog. Incremental load uses updated_at from source compared to last successful watermark in main.ctl.etl_watermark."
+}

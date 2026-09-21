@@ -1,0 +1,33 @@
+ETL Requirement Document: Customer Dimension Load
+
+Objective:
+Load customer data from staging into the warehouse dimension table for QA validation.
+
+Source Table:
+main.stg.customer_raw
+
+Target Table:
+main.dw.dim_customer
+
+Primary Key:
+customer_id
+
+Load Type:
+Incremental load using updated_at compared against the last successful watermark in main.ctl.etl_watermark.
+
+Business Rules:
+1. email_address must contain '@'
+2. customer_id must never be NULL
+3. is_active must be 0 or 1 only
+
+Transformation Rules:
+1. customer_name must be upper-cased and trimmed
+2. email_address must be lower-cased
+3. is_active is 1 when source status_cd = 'A', else 0
+4. Soft-deleted source rows (status_cd = 'D') must not land in target
+
+Not Null Columns in Target:
+customer_id, customer_name, effective_from
+
+Additional Notes:
+All tables live in Azure Databricks Unity Catalog.

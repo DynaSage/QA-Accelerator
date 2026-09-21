@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">ETL QA Accelerator</title>
+  <desc id="desc">Three evenly spaced data nodes representing an ETL workflow.</desc>
+  <rect width="64" height="64" rx="18" fill="#28558f"/>
+  <path d="M18 32h28" fill="none" stroke="#d8e6ff" stroke-opacity=".72" stroke-width="3" stroke-linecap="round"/>
+  <rect x="11" y="25" width="14" height="14" rx="4" fill="#d8e6ff"/>
+  <rect x="25" y="25" width="14" height="14" rx="4" fill="#e5b9f4"/>
+  <rect x="39" y="25" width="14" height="14" rx="4" fill="#a6d7b0"/>
+</svg>

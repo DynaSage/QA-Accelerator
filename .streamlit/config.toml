@@ -1,0 +1,18 @@
+[theme]
+base = "dark"
+primaryColor = "#0369a1"
+backgroundColor = "#0f1419"
+secondaryBackgroundColor = "#1c2430"
+textColor = "#e6eaf0"
+font = "'Google Sans Flex':https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700;800&display=swap"
+headingFont = "'Google Sans Flex':https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700;800&display=swap"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "auto"
+showErrorDetails = true
