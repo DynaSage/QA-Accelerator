@@ -17,9 +17,9 @@ def build_qa_sql_agent():
 
     workflow.add_edge(START, "analyze_spec")
     workflow.add_edge("analyze_spec", "generate_sql_tests")
-    workflow.add_edge("generate_sql_tests", "generate_test_cases")
-    workflow.add_edge("generate_test_cases", "safety_check")
-    workflow.add_edge("safety_check", "execute_on_adb")
+    workflow.add_edge("generate_sql_tests", "safety_check")
+    workflow.add_edge("safety_check", "generate_test_cases")
+    workflow.add_edge("generate_test_cases", "execute_on_adb")
     workflow.add_edge("execute_on_adb", "format_qa_report")
     workflow.add_edge("format_qa_report", END)
     return workflow.compile()

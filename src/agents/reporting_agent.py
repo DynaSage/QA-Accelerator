@@ -22,6 +22,7 @@ def format_qa_report(state: AgentState) -> AgentState:
         f"- Spec version: {state.get('spec_version') or 'N/A'}",
         f"- Validation tests generated: {len(state.get('tests') or [])}",
         f"- Structured test cases: {len(state.get('test_cases') or [])}",
+        f"- Mapping Agent SQL plan items: {len(state.get('sql_test_plan') or [])}",
     ]
     if summary:
         lines.append(f"- Execution summary: {', '.join(f'{k}: {v}' for k, v in summary.items())}")

@@ -6,7 +6,6 @@ import argparse
 import json
 from pathlib import Path
 from uuid import uuid4
-
 from src.exporters.excel_exporter import export_test_cases_to_excel
 from src.graph import build_qa_sql_agent
 from src.inputs.json_loader import load_etl_spec_from_json

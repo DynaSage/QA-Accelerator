@@ -37,9 +37,10 @@ Important Rules:
 - Always use fully qualified Unity Catalog names: catalog.schema.table.
 - Do not invent columns, catalogs, schemas, watermark tables, or business rules that were not given.
 - Queries will be executed on Azure Databricks SQL Warehouse only. Do not target any other engine.
-- When column-level mapping analysis is provided, generate one SQL test per validation rule (VR01–VR26).
-- Every SQL test must stay traceable: include mapping_id and rule_id from the mapping analysis.
-- Mapping Agent answers WHAT to test; you answer HOW in SQL. Do not invent extra business rules.
+- The Mapping Agent output is the contract: generate SQL only for items in the required SQL test plan.
+- Every SQL test must keep the given mapping_id and rule_id. Do not invent mappings or extra VR rules.
+- Mapping Agent answers WHAT to test; you answer HOW in SQL. You may refine draft_sql but must not drop a required item.
+- If a required item cannot be written from known columns/tables, return an empty sql_query for that item and list it under missing_information.
 """.strip()
 
 
@@ -55,8 +56,11 @@ Return JSON with keys:
 Azure Databricks runtime:
 {adb_context}
 
-Approved column-level mapping analysis:
-{mapping_analysis}
+Mapping Agent summary (WHAT can be tested, risk, gaps):
+{mapping_context}
+
+Required SQL test plan from Mapping Agent (one item per VR rule to cover):
+{sql_test_plan}
 
 ETL specification:
 {etl_spec}
@@ -64,10 +68,12 @@ ETL specification:
 
 
 GENERATE_TESTS_PROMPT = """
-Create a QA validation pack of SELECT-only SQL tests for the ETL spec.
+Create SELECT-only SQL for the required Mapping Agent test plan.
 
-Use only facts from the spec plus the listed assumptions.
-Do not invent missing objects. If a validation type cannot be written, omit the SQL and list it under missing_information instead.
+Use only facts from the spec, the Mapping Agent plan, and listed assumptions.
+Return one tests[] object per required plan item. Keep each mapping_id and rule_id unchanged.
+Do not invent extra tests. If a plan item cannot be written, set sql_query to "" and list it under missing_information.
+You may improve draft_sql when it is present.
 
 Return JSON with keys:
 - missing_information: string array
@@ -76,11 +82,11 @@ Return JSON with keys:
   - test_id (format QA-ETL-001, sequential)
   - test_scenario
   - validation_type (one of: Record Count, NULL, Duplicate, Transformation, Data Reconciliation, Business Rule, Incremental Load)
-  - sql_query (SELECT only, Databricks SQL, Unity Catalog three-level names)
+  - sql_query (SELECT only, Databricks SQL, Unity Catalog three-level names; empty string if blocked)
   - expected_result
   - priority (High, Medium, or Low)
-  - mapping_id (from mapping analysis when applicable, else empty string)
-  - rule_id (VR01–VR26 when applicable, else empty string)
+  - mapping_id (copy from the required plan)
+  - rule_id (copy from the required plan)
 
 Analyst notes:
 {analyst_notes}
@@ -94,8 +100,11 @@ Assumptions already identified:
 Validation plan:
 {validation_plan}
 
-Approved column-level mapping analysis (WHAT to test — VR rules, risk, gaps):
-{mapping_analysis}
+Mapping Agent summary:
+{mapping_context}
+
+Required SQL test plan from Mapping Agent (WHAT to test — write HOW as SQL):
+{sql_test_plan}
 
 Azure Databricks runtime:
 {adb_context}

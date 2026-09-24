@@ -3,6 +3,12 @@ import json
 from src.config import adb_runtime_context, get_databricks_settings
 from src.graph.state import AgentState, QueryExecution, ValidationTest
 from src.integrations.databricks_client import execute_select
+from src.mapping.sql_test_plan import (
+    build_sql_test_plan,
+    compact_mapping_context,
+    merge_plan_with_llm_tests,
+    plan_for_llm,
+)
 from src.prompts import ANALYZE_PROMPT, GENERATE_TESTS_PROMPT, SQL_AGENT_SYSTEM_PROMPT
 from src.utils.llm_json import invoke_llm_json
 from src.utils.sql_safety import has_unresolved_placeholders, validate_sql_test
@@ -19,23 +25,49 @@ def _spec_json(state: AgentState) -> str:
     return json.dumps(spec, indent=2)
 
 
+def _mapping_prompt_fields(state: AgentState) -> tuple[str, str, list[dict]]:
+    settings = adb_runtime_context()
+    spec = dict(state.get("etl_spec") or {})
+    catalog = str(spec.get("catalog") or settings.get("catalog") or "main")
+    plan = build_sql_test_plan(state.get("mapping_analysis") or {}, spec, catalog=catalog)
+    mapping_context = json.dumps(compact_mapping_context(state.get("mapping_analysis") or {}), indent=2)
+    sql_test_plan = json.dumps(plan_for_llm(plan) if plan else [], indent=2)
+    return mapping_context, sql_test_plan, plan
+
+
 def analyze_spec(state: AgentState) -> AgentState:
+    mapping_context, sql_test_plan, plan = _mapping_prompt_fields(state)
     payload = _llm_json(
         ANALYZE_PROMPT.format(
             etl_spec=_spec_json(state),
             adb_context=json.dumps(adb_runtime_context(), indent=2),
-            mapping_analysis=json.dumps(state.get("mapping_analysis") or {}, indent=2),
+            mapping_context=mapping_context,
+            sql_test_plan=sql_test_plan,
         )
     )
+    validation_plan = payload.get("validation_plan") or []
+    if plan and not validation_plan:
+        validation_plan = [
+            f"{item['mapping_id']}/{item['rule_id']}: {item['what_to_test']}" for item in plan[:25]
+        ]
+    missing = list(payload.get("missing_information") or [])
+    analysis = state.get("mapping_analysis") or {}
+    missing.extend(analysis.get("summary_gaps") or [])
     return {
         "analyst_notes": payload.get("analyst_notes", ""),
-        "missing_information": payload.get("missing_information", []),
+        "missing_information": list(dict.fromkeys(missing)),
         "assumptions": payload.get("assumptions", []),
-        "validation_plan": payload.get("validation_plan", []),
+        "validation_plan": validation_plan,
+        "sql_test_plan": plan,
     }
 
 
 def generate_sql_tests(state: AgentState) -> AgentState:
+    mapping_context, sql_test_plan_json, plan = _mapping_prompt_fields(state)
+    if state.get("sql_test_plan"):
+        plan = list(state.get("sql_test_plan") or [])
+        sql_test_plan_json = json.dumps(plan_for_llm(plan) if plan else [], indent=2)
+
     payload = _llm_json(
         GENERATE_TESTS_PROMPT.format(
             etl_spec=_spec_json(state),
@@ -44,16 +76,30 @@ def generate_sql_tests(state: AgentState) -> AgentState:
             missing_information=json.dumps(state.get("missing_information", []), indent=2),
             assumptions=json.dumps(state.get("assumptions", []), indent=2),
             validation_plan=json.dumps(state.get("validation_plan", []), indent=2),
-            mapping_analysis=json.dumps(state.get("mapping_analysis") or {}, indent=2),
+            mapping_context=mapping_context,
+            sql_test_plan=sql_test_plan_json,
         )
     )
-    tests = payload.get("tests", [])
-    missing = list(dict.fromkeys((state.get("missing_information") or []) + payload.get("missing_information", [])))
+    llm_tests = payload.get("tests") or []
+    if plan:
+        tests, uncovered = merge_plan_with_llm_tests(plan, llm_tests)
+    else:
+        tests = llm_tests
+        uncovered = []
+
+    missing = list(
+        dict.fromkeys(
+            (state.get("missing_information") or [])
+            + list(payload.get("missing_information") or [])
+            + uncovered
+        )
+    )
     assumptions = list(dict.fromkeys((state.get("assumptions") or []) + payload.get("assumptions", [])))
     return {
         "tests": tests,
         "missing_information": missing,
         "assumptions": assumptions,
+        "sql_test_plan": plan,
     }
 
 
