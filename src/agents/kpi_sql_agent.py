@@ -1,6 +1,5 @@
 import json
 from typing import Any
-
 from src.config import adb_runtime_context
 from src.prompts.kpi_logic_prompts import KPI_SQL_NORMALIZATION_PROMPT, KPI_SQL_NORMALIZER_SYSTEM_PROMPT
 from src.utils.llm_json import invoke_llm_json

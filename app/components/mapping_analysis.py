@@ -27,23 +27,38 @@ def render_mapping_downloads(draft: dict[str, Any] | None, *, key_prefix: str = 
         div[data-testid="stPopover"] {
             display: inline-block !important;
         }
-        div[data-testid="stPopover"] > button {
-            min-width: 250px !important;
-            max-width: 280px !important;
-            border-radius: 999px !important;
-            padding: 0.6rem 1.2rem !important;
-            font-size: 0.9rem !important;
-            font-weight: 700 !important;
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            border-radius: var(--shape-lg, 20px) !important;
+            padding: 9px 22px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
             line-height: 1.2 !important;
-            background: #0c6f9e !important;
-            border: 1px solid #1aa3d6 !important;
+            background: #0b4f7a !important;
+            border: 1px solid #38bdf8 !important;
             color: #f5fbff !important;
-            box-shadow: 0 2px 10px rgba(12, 111, 158, 0.35) !important;
+            box-shadow: 0 2px 12px rgba(3, 105, 161, 0.35) !important;
         }
-        div[data-testid="stPopover"] > button:hover {
-            background: #0d7fb3 !important;
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"] p,
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"] div {
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            color: inherit !important;
+            margin: 0 !important;
+        }
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover {
+            background: #0a5f96 !important;
             border-color: #38bdf8 !important;
             color: #ffffff !important;
+        }
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:active {
+            transform: scale(0.97) !important;
+        }
+        div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:focus-visible {
+            outline: 2px solid var(--primary, #38bdf8) !important;
+            outline-offset: 2px !important;
         }
         </style>
         """,
